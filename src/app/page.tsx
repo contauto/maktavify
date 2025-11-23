@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Zap, GitCompare } from 'lucide-react';
+import { Zap, GitCompare, ArrowDown } from 'lucide-react';
 import prettier from 'prettier/standalone';
 import parserGraphql from 'prettier/parser-graphql';
 import { triggerFireworks } from '@/utils/animations';
@@ -9,7 +9,7 @@ import Header from '@/components/layout/Header';
 import InputPanel from '@/components/ui/InputPanel';
 import OutputPanel from '@/components/ui/OutputPanel';
 
-export default function DevFormatPro() {
+export default function Maktavify() {
   const [mode, setMode] = useState('format');
   const [activeTab, setActiveTab] = useState('json');
   const [input, setInput] = useState('');
@@ -128,7 +128,7 @@ export default function DevFormatPro() {
         <div className={`absolute inset-0 ${theme === 'dark' ? 'bg-gradient-to-br from-indigo-900/20 via-transparent to-purple-900/20' : 'bg-gradient-to-br from-indigo-100/40 via-transparent to-purple-100/40'}`} />
       </div>
 
-      <div className="relative z-10 max-w-[1800px] mx-auto p-6">
+      <div className="relative z-10 max-w-[1800px] mx-auto p-3 sm:p-4 md:p-6">
         <Header 
           theme={theme} 
           setTheme={setTheme} 
@@ -139,7 +139,7 @@ export default function DevFormatPro() {
         />
 
         {mode === 'format' ? (
-          <div className="grid lg:grid-cols-[1fr_auto_1fr] gap-6">
+          <div className="flex flex-col lg:grid lg:grid-cols-[1fr_auto_1fr] gap-4 md:gap-6">
             <InputPanel 
               label="Input" 
               value={input} 
@@ -151,14 +151,15 @@ export default function DevFormatPro() {
               placeholder={activeTab === 'json' ? '{\n  "name": "John",\n  "age": 30\n}' : 'query {\n  user(id: "1") {\n    name\n    email\n  }\n}'}
             />
 
-            <div className="flex flex-col items-center justify-center gap-4 py-4">
+            <div className="flex lg:flex-col items-center justify-center gap-4 py-2 lg:py-4">
               <motion.button
                 whileHover={{ scale: 1.1, rotate: 90 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={handleProcess}
-                className="relative group w-20 h-20 rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-600 shadow-2xl shadow-indigo-500/40 flex items-center justify-center"
+                className="relative group w-16 h-16 lg:w-20 lg:h-20 rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-600 shadow-2xl shadow-indigo-500/40 flex items-center justify-center"
               >
-                <Zap className="text-white" size={36} />
+                <ArrowDown className="text-white lg:hidden" size={28} strokeWidth={2.5} />
+                <Zap className="text-white hidden lg:block" size={36} />
                 <div className="absolute inset-0 rounded-2xl bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
               </motion.button>
             </div>
@@ -177,7 +178,7 @@ export default function DevFormatPro() {
             />
           </div>
         ) : (
-          <div className="grid lg:grid-cols-[1fr_1fr_auto_1fr] gap-6">
+          <div className="flex flex-col lg:grid lg:grid-cols-[1fr_1fr_auto_1fr] gap-4 md:gap-6">
             <InputPanel 
               label="JSON 1" 
               value={input} 
@@ -201,14 +202,14 @@ export default function DevFormatPro() {
               initialX={-10}
             />
 
-            <div className="flex flex-col items-center justify-center py-4">
+            <div className="flex lg:flex-col items-center justify-center py-2 lg:py-4">
               <motion.button
                 whileHover={{ scale: 1.1, rotate: 180 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={handleCompare}
-                className="relative group w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-600 to-cyan-600 shadow-2xl shadow-blue-500/40 flex items-center justify-center"
+                className="relative group w-16 h-16 lg:w-20 lg:h-20 rounded-2xl bg-gradient-to-br from-blue-600 to-cyan-600 shadow-2xl shadow-blue-500/40 flex items-center justify-center"
               >
-                <GitCompare className="text-white" size={36} />
+                <GitCompare className="text-white" size={28} strokeWidth={2.5} />
                 <div className="absolute inset-0 rounded-2xl bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
               </motion.button>
             </div>

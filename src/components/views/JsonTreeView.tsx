@@ -17,14 +17,14 @@ const CollapsibleNodeExpanded = ({ value, depth = 0, expandAll, nodeKey, isLast 
     setIsExpanded(expandAll);
   }, [expandAll]);
 
-  const indent = depth * 20;
+  const indent = depth * 16;
 
   if (value === null) {
     return (
       <span style={{ marginLeft: nodeKey ? 0 : `${indent}px` }}>
-         {nodeKey && <><span className="text-cyan-400">"{nodeKey}"</span><span className="text-gray-500">: </span></>}
-         <span className="text-orange-500">null</span>
-         {!isLast && <span className="text-gray-500">,</span>}
+        {nodeKey && <><span className="text-cyan-400">"{nodeKey}"</span><span className="text-gray-500">: </span></>}
+        <span className="text-orange-500">null</span>
+        {!isLast && <span className="text-gray-500">,</span>}
       </span>
     );
   }
@@ -51,7 +51,7 @@ const CollapsibleNodeExpanded = ({ value, depth = 0, expandAll, nodeKey, isLast 
 
   if (typeof value === 'string') {
     return (
-      <span style={{ marginLeft: nodeKey ? 0 : `${indent}px` }}>
+      <span style={{ marginLeft: nodeKey ? 0 : `${indent}px` }} className="break-all">
         {nodeKey && <><span className="text-cyan-400">"{nodeKey}"</span><span className="text-gray-500">: </span></>}
         <span className="text-green-500">"{value}"</span>
         {!isLast && <span className="text-gray-500">,</span>}
@@ -61,7 +61,7 @@ const CollapsibleNodeExpanded = ({ value, depth = 0, expandAll, nodeKey, isLast 
 
   if (Array.isArray(value)) {
     const isEmpty = value.length === 0;
-    
+
     return (
       <div style={{ marginLeft: nodeKey ? 0 : `${indent}px` }}>
         <div className="flex items-start">
@@ -70,12 +70,12 @@ const CollapsibleNodeExpanded = ({ value, depth = 0, expandAll, nodeKey, isLast 
               whileHover={{ scale: 1.2 }}
               whileTap={{ scale: 0.9 }}
               onClick={() => setIsExpanded(!isExpanded)}
-              className="mr-1 mt-0.5 text-gray-400 hover:text-white transition-colors"
+              className="mr-1 mt-0.5 text-gray-400 hover:text-white transition-colors flex-shrink-0"
             >
-              {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+              {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
             </motion.button>
           )}
-          <div className="flex-1">
+          <div className="flex-1 break-all">
             {nodeKey && (
               <>
                 <span className="text-cyan-400">"{nodeKey}"</span>
@@ -92,7 +92,7 @@ const CollapsibleNodeExpanded = ({ value, depth = 0, expandAll, nodeKey, isLast 
             )}
           </div>
         </div>
-        
+
         <AnimatePresence>
           {isExpanded && !isEmpty && (
             <motion.div
@@ -102,7 +102,7 @@ const CollapsibleNodeExpanded = ({ value, depth = 0, expandAll, nodeKey, isLast 
               transition={{ duration: 0.2 }}
               className="overflow-hidden"
             >
-              <div className="ml-4 border-l-2 border-gray-700/30 pl-2">
+              <div className="ml-3 md:ml-4 border-l-2 border-gray-700/30 pl-1.5 md:pl-2">
                 {value.map((item, i) => (
                   <div key={i}>
                     <CollapsibleNodeExpanded value={item} depth={depth + 1} expandAll={expandAll} isLast={i === value.length - 1} />
@@ -130,12 +130,12 @@ const CollapsibleNodeExpanded = ({ value, depth = 0, expandAll, nodeKey, isLast 
               whileHover={{ scale: 1.2 }}
               whileTap={{ scale: 0.9 }}
               onClick={() => setIsExpanded(!isExpanded)}
-              className="mr-1 mt-0.5 text-gray-400 hover:text-white transition-colors"
+              className="mr-1 mt-0.5 text-gray-400 hover:text-white transition-colors flex-shrink-0"
             >
-              {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+              {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
             </motion.button>
           )}
-          <div className="flex-1">
+          <div className="flex-1 break-all">
             {nodeKey && (
               <>
                 <span className="text-cyan-400">"{nodeKey}"</span>
@@ -162,7 +162,7 @@ const CollapsibleNodeExpanded = ({ value, depth = 0, expandAll, nodeKey, isLast 
               transition={{ duration: 0.2 }}
               className="overflow-hidden"
             >
-              <div className="ml-4 border-l-2 border-gray-700/30 pl-2">
+              <div className="ml-3 md:ml-4 border-l-2 border-gray-700/30 pl-1.5 md:pl-2">
                 {entries.map(([key, val], i) => (
                   <div key={key}>
                     <CollapsibleNodeExpanded nodeKey={key} value={val} depth={depth + 1} expandAll={expandAll} isLast={i === entries.length - 1} />
@@ -178,12 +178,11 @@ const CollapsibleNodeExpanded = ({ value, depth = 0, expandAll, nodeKey, isLast 
     );
   }
 
-  return <span>{String(value)}</span>;
+  return <span className="break-all">{String(value)}</span>;
 };
 
 const JsonTreeView = ({ data }: { data: any }) => {
   const [expandAll, setExpandAll] = useState(true);
-  
   const [key, setKey] = useState(0);
 
   const handleExpandAll = () => {
@@ -197,28 +196,30 @@ const JsonTreeView = ({ data }: { data: any }) => {
   };
 
   return (
-    <div className="font-mono text-sm p-4">
-      <div className="flex gap-2 mb-4 pb-3 border-b border-gray-700/30">
+    <div className="font-mono text-xs sm:text-sm p-3 md:p-4">
+      <div className="flex flex-wrap gap-1.5 md:gap-2 mb-3 md:mb-4 pb-2 md:pb-3 border-b border-gray-700/30">
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={handleExpandAll}
-          className="px-3 py-1.5 bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-400 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1"
+          className="px-2.5 py-1 md:px-3 md:py-1.5 bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-400 rounded-md md:rounded-lg text-[10px] md:text-xs font-semibold transition-colors flex items-center gap-1"
         >
-          <ChevronDown size={14} />
-          Expand All
+          <ChevronDown size={12} className="md:w-[14px] md:h-[14px]" />
+          <span>Expand All</span>
         </motion.button>
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={handleCollapseAll}
-          className="px-3 py-1.5 bg-gray-600/20 hover:bg-gray-600/30 text-gray-400 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1"
+          className="px-2.5 py-1 md:px-3 md:py-1.5 bg-gray-600/20 hover:bg-gray-600/30 text-gray-400 rounded-md md:rounded-lg text-[10px] md:text-xs font-semibold transition-colors flex items-center gap-1"
         >
-          <ChevronRight size={14} />
-          Collapse All
+          <ChevronRight size={12} className="md:w-[14px] md:h-[14px]" />
+          <span>Collapse All</span>
         </motion.button>
       </div>
-      <CollapsibleNodeExpanded key={key} value={data} expandAll={expandAll} isLast={true} />
+      <div className="overflow-x-auto">
+        <CollapsibleNodeExpanded key={key} value={data} expandAll={expandAll} isLast={true} />
+      </div>
     </div>
   );
 };
