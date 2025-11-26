@@ -5,6 +5,7 @@ import { Zap, GitCompare, ArrowDown } from 'lucide-react';
 import prettier from 'prettier/standalone';
 import parserGraphql from 'prettier/parser-graphql';
 import { triggerFireworks } from '@/utils/animations';
+import { safeJsonParse } from '@/utils/jsonUtils';
 import Header from '@/components/layout/Header';
 import InputPanel from '@/components/ui/InputPanel';
 import OutputPanel from '@/components/ui/OutputPanel';
@@ -44,7 +45,7 @@ export default function Maktavify() {
 
     try {
       if (activeTab === 'json') {
-        const parsed = JSON.parse(input);
+        const parsed = safeJsonParse(input);
         setOutput({ type: 'json', data: parsed });
         setStatus('success');
         triggerFireworks();
@@ -75,8 +76,8 @@ export default function Maktavify() {
     }
 
     try {
-      const json1 = JSON.parse(input);
-      const json2 = JSON.parse(input2);
+      const json1 = safeJsonParse(input);
+      const json2 = safeJsonParse(input2);
       setOutput({ json1, json2 });
       setStatus('success');
       triggerFireworks();
@@ -97,7 +98,7 @@ export default function Maktavify() {
   const handleDownload = () => {
     if (!output) return;
     const dataStr = output.type === 'json' ? JSON.stringify(output.data, null, 2) : output.type === 'graphql' ? output.data : JSON.stringify(output, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
     const exportFileDefaultName = `formatted-${output.type || 'data'}.${output.type === 'graphql' ? 'graphql' : 'json'}`;
     const linkElement = document.createElement('a');
     linkElement.setAttribute('href', dataUri);
@@ -129,24 +130,24 @@ export default function Maktavify() {
       </div>
 
       <div className="relative z-10 max-w-[1800px] mx-auto p-3 sm:p-4 md:p-6">
-        <Header 
-          theme={theme} 
-          setTheme={setTheme} 
-          mode={mode} 
-          setMode={setMode} 
-          activeTab={activeTab} 
-          setActiveTab={setActiveTab} 
+        <Header
+          theme={theme}
+          setTheme={setTheme}
+          mode={mode}
+          setMode={setMode}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
         />
 
         {mode === 'format' ? (
           <div className="flex flex-col lg:grid lg:grid-cols-[1fr_auto_1fr] gap-4 md:gap-6">
-            <InputPanel 
-              label="Input" 
-              value={input} 
-              onChange={(e) => setInput(e.target.value)} 
-              onClear={() => setInput('')} 
-              onUpload={(e) => handleFileUpload(e, 'input1')} 
-              theme={theme} 
+            <InputPanel
+              label="Input"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onClear={() => setInput('')}
+              onUpload={(e) => handleFileUpload(e, 'input1')}
+              theme={theme}
               activeTab={activeTab}
               placeholder={activeTab === 'json' ? '{\n  "name": "John",\n  "age": 30\n}' : 'query {\n  user(id: "1") {\n    name\n    email\n  }\n}'}
             />
@@ -164,7 +165,7 @@ export default function Maktavify() {
               </motion.button>
             </div>
 
-            <OutputPanel 
+            <OutputPanel
               status={status}
               error={error}
               output={output}
@@ -179,24 +180,24 @@ export default function Maktavify() {
           </div>
         ) : (
           <div className="flex flex-col lg:grid lg:grid-cols-[1fr_1fr_auto_1fr] gap-4 md:gap-6">
-            <InputPanel 
-              label="JSON 1" 
-              value={input} 
-              onChange={(e) => setInput(e.target.value)} 
-              onClear={() => setInput('')} 
-              onUpload={(e) => handleFileUpload(e, 'input1')} 
-              theme={theme} 
+            <InputPanel
+              label="JSON 1"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onClear={() => setInput('')}
+              onUpload={(e) => handleFileUpload(e, 'input1')}
+              theme={theme}
               activeTab="json"
               placeholder='{\n  "name": "John",\n  "age": 30\n}'
             />
 
-            <InputPanel 
-              label="JSON 2" 
-              value={input2} 
-              onChange={(e) => setInput2(e.target.value)} 
-              onClear={() => setInput2('')} 
-              onUpload={(e) => handleFileUpload(e, 'input2')} 
-              theme={theme} 
+            <InputPanel
+              label="JSON 2"
+              value={input2}
+              onChange={(e) => setInput2(e.target.value)}
+              onClear={() => setInput2('')}
+              onUpload={(e) => handleFileUpload(e, 'input2')}
+              theme={theme}
               activeTab="json"
               placeholder='{\n  "name": "Jane",\n  "age": 25\n}'
               initialX={-10}
@@ -214,7 +215,7 @@ export default function Maktavify() {
               </motion.button>
             </div>
 
-            <OutputPanel 
+            <OutputPanel
               status={status}
               error={error}
               output={output}
