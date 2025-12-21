@@ -10,44 +10,99 @@ interface DiffItem {
 }
 
 const JsonCompare = ({ json1, json2 }: { json1: any; json2: any }) => {
-  const [diff, setDiff] = useState<{ added: DiffItem[]; removed: DiffItem[]; modified: DiffItem[] }>({ 
-    added: [], 
-    removed: [], 
-    modified: [] 
+  const [diff, setDiff] = useState<{ added: DiffItem[]; removed: DiffItem[]; modified: DiffItem[] }>({
+    added: [],
+    removed: [],
+    modified: []
   });
   const [expandAll, setExpandAll] = useState(true);
 
   useEffect(() => {
     if (!json1 || !json2) return;
 
-    const findDifferences = (obj1: any, obj2: any, path = '') => {
-      const result: any = { added: [], removed: [], modified: [] };
+    const isPlainObject = (val: any): boolean => {
+      return val !== null && typeof val === 'object' && !Array.isArray(val);
+    };
 
-      const keys1 = Object.keys(obj1);
-      const keys2 = Object.keys(obj2);
+    const buildPath = (basePath: string, key: string | number): string => {
+      if (basePath === '') {
+        return typeof key === 'number' ? `[${key}]` : String(key);
+      }
+      return typeof key === 'number' ? `${basePath}[${key}]` : `${basePath}.${key}`;
+    };
 
-      keys2.forEach(key => {
-        const currentPath = path ? `${path}.${key}` : key;
-        if (!keys1.includes(key)) {
-          result.added.push({ path: currentPath, value: obj2[key] });
-        } else if (JSON.stringify(obj1[key]) !== JSON.stringify(obj2[key])) {
-          if (typeof obj1[key] === 'object' && obj1[key] !== null && typeof obj2[key] === 'object' && obj2[key] !== null && !Array.isArray(obj1[key]) && !Array.isArray(obj2[key])) {
-            const nested = findDifferences(obj1[key], obj2[key], currentPath);
-            result.added.push(...nested.added);
-            result.removed.push(...nested.removed);
-            result.modified.push(...nested.modified);
-          } else {
-            result.modified.push({ path: currentPath, old: obj1[key], new: obj2[key] });
+    const findDifferences = (obj1: any, obj2: any, path = ''): { added: DiffItem[]; removed: DiffItem[]; modified: DiffItem[] } => {
+      const result: { added: DiffItem[]; removed: DiffItem[]; modified: DiffItem[] } = {
+        added: [],
+        removed: [],
+        modified: []
+      };
+
+      if (Array.isArray(obj1) && Array.isArray(obj2)) {
+        const maxLen = Math.max(obj1.length, obj2.length);
+
+        for (let i = 0; i < maxLen; i++) {
+          const currentPath = buildPath(path, i);
+
+          if (i >= obj1.length) {
+            result.added.push({ path: currentPath, value: obj2[i] });
+          } else if (i >= obj2.length) {
+            result.removed.push({ path: currentPath, value: obj1[i] });
+          } else if (JSON.stringify(obj1[i]) !== JSON.stringify(obj2[i])) {
+            const val1 = obj1[i];
+            const val2 = obj2[i];
+
+            if ((isPlainObject(val1) && isPlainObject(val2)) ||
+              (Array.isArray(val1) && Array.isArray(val2))) {
+              const nested = findDifferences(val1, val2, currentPath);
+              result.added.push(...nested.added);
+              result.removed.push(...nested.removed);
+              result.modified.push(...nested.modified);
+            } else {
+              result.modified.push({ path: currentPath, old: val1, new: val2 });
+            }
           }
         }
-      });
 
-      keys1.forEach(key => {
-        const currentPath = path ? `${path}.${key}` : key;
-        if (!keys2.includes(key)) {
-          result.removed.push({ path: currentPath, value: obj1[key] });
-        }
-      });
+        return result;
+      }
+
+      if (isPlainObject(obj1) && isPlainObject(obj2)) {
+        const keys1 = Object.keys(obj1);
+        const keys2 = Object.keys(obj2);
+        const allKeys = new Set([...keys1, ...keys2]);
+
+        allKeys.forEach(key => {
+          const currentPath = buildPath(path, key);
+          const inObj1 = keys1.includes(key);
+          const inObj2 = keys2.includes(key);
+
+          if (!inObj1 && inObj2) {
+            result.added.push({ path: currentPath, value: obj2[key] });
+          } else if (inObj1 && !inObj2) {
+            result.removed.push({ path: currentPath, value: obj1[key] });
+          } else if (JSON.stringify(obj1[key]) !== JSON.stringify(obj2[key])) {
+            const val1 = obj1[key];
+            const val2 = obj2[key];
+
+            if ((isPlainObject(val1) && isPlainObject(val2)) ||
+              (Array.isArray(val1) && Array.isArray(val2))) {
+              const nested = findDifferences(val1, val2, currentPath);
+              result.added.push(...nested.added);
+              result.removed.push(...nested.removed);
+              result.modified.push(...nested.modified);
+            } else {
+              result.modified.push({ path: currentPath, old: val1, new: val2 });
+            }
+          }
+        });
+
+        return result;
+      }
+
+      if (JSON.stringify(obj1) !== JSON.stringify(obj2)) {
+        result.modified.push({ path: path || 'root', old: obj1, new: obj2 });
+      }
 
       return result;
     };
@@ -85,7 +140,7 @@ const JsonCompare = ({ json1, json2 }: { json1: any; json2: any }) => {
         </motion.button>
       </div>
 
-      <CollapsibleSectionWrapper 
+      <CollapsibleSectionWrapper
         key={expandAll ? 'expanded' : 'collapsed'}
         expandAll={expandAll}
         diff={diff}
