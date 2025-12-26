@@ -51,7 +51,7 @@ const CollapsibleNodeExpanded = ({ value, depth = 0, expandAll, nodeKey, isLast 
 
   if (typeof value === 'string') {
     return (
-      <span style={{ marginLeft: nodeKey ? 0 : `${indent}px` }} className="break-all">
+      <span style={{ marginLeft: nodeKey ? 0 : `${indent}px` }} className="whitespace-nowrap">
         {nodeKey && <><span className="text-cyan-400">"{nodeKey}"</span><span className="text-gray-500">: </span></>}
         <span className="text-green-500">"{value}"</span>
         {!isLast && <span className="text-gray-500">,</span>}
@@ -75,7 +75,7 @@ const CollapsibleNodeExpanded = ({ value, depth = 0, expandAll, nodeKey, isLast 
               {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
             </motion.button>
           )}
-          <div className="flex-1 break-all">
+          <div className="flex-1 whitespace-nowrap">
             {nodeKey && (
               <>
                 <span className="text-cyan-400">"{nodeKey}"</span>
@@ -135,7 +135,7 @@ const CollapsibleNodeExpanded = ({ value, depth = 0, expandAll, nodeKey, isLast 
               {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
             </motion.button>
           )}
-          <div className="flex-1 break-all">
+          <div className="flex-1 whitespace-nowrap">
             {nodeKey && (
               <>
                 <span className="text-cyan-400">"{nodeKey}"</span>
@@ -217,8 +217,10 @@ const JsonTreeView = ({ data }: { data: any }) => {
           <span>Collapse All</span>
         </motion.button>
       </div>
-      <div className="overflow-x-auto">
-        <CollapsibleNodeExpanded key={key} value={data} expandAll={expandAll} isLast={true} />
+      <div className="overflow-x-auto pb-2" style={{ scrollbarWidth: 'thin' }}>
+        <div className="min-w-fit">
+          <CollapsibleNodeExpanded key={key} value={data} expandAll={expandAll} isLast={true} />
+        </div>
       </div>
     </div>
   );
