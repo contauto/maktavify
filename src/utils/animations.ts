@@ -1,13 +1,18 @@
 import confetti from 'canvas-confetti';
+import type { ConfettiOptions } from '@/types';
 
-export const triggerFireworks = () => {
+/**
+ * Triggers a fireworks-style confetti celebration animation.
+ * Used to celebrate successful JSON/GraphQL formatting operations.
+ */
+export const triggerFireworks = (): void => {
   const count = 200;
   const defaults = {
     origin: { y: 0.7 },
     zIndex: 9999
   };
 
-  function fire(particleRatio: number, opts: any) {
+  function fire(particleRatio: number, opts: ConfettiOptions): void {
     confetti({
       ...defaults,
       ...opts,

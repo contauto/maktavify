@@ -4,47 +4,56 @@ import { AlertTriangle, Check, Table, FileJson, Download, Copy, Sparkles, GitCom
 import JsonTreeView from '@/components/views/JsonTreeView';
 import JsonTableView from '@/components/views/JsonTableView';
 import JsonCompare from '@/components/views/JsonCompare';
+import type { Theme, Mode, ViewMode, ProcessStatus, FormatOutput, CompareOutput } from '@/types';
 
 interface OutputPanelProps {
-  status: string;
+  status: ProcessStatus;
   error: string | null;
-  output: any;
-  theme: string;
-  viewMode?: string;
-  setViewMode?: (mode: string) => void;
+  output: FormatOutput | CompareOutput | null;
+  theme: Theme;
+  viewMode?: ViewMode;
+  setViewMode?: (mode: ViewMode) => void;
   onCopy?: () => void;
   onDownload?: () => void;
   copied?: boolean;
-  mode: string;
+  mode: Mode;
 }
 
-const OutputPanel = ({ 
-  status, 
-  error, 
-  output, 
-  theme, 
-  viewMode = 'tree', 
-  setViewMode, 
-  onCopy, 
-  onDownload, 
+const OutputPanel: React.FC<OutputPanelProps> = ({
+  status,
+  error,
+  output,
+  theme,
+  viewMode = 'tree',
+  setViewMode,
+  onCopy,
+  onDownload,
   copied,
   mode
-}: OutputPanelProps) => {
+}) => {
+  /** Type guard to check if output is FormatOutput */
+  const isFormatOutput = (out: FormatOutput | CompareOutput | null): out is FormatOutput => {
+    return out !== null && 'type' in out && 'data' in out;
+  };
+
+  /** Type guard to check if output is CompareOutput */
+  const isCompareOutput = (out: FormatOutput | CompareOutput | null): out is CompareOutput => {
+    return out !== null && 'json1' in out && 'json2' in out;
+  };
+
   return (
     <motion.div
       initial={{ x: 20, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
-      className={`rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl ${
-        status === 'error' 
-          ? 'border-2 border-red-500' 
-          : theme === 'dark' ? 'bg-gray-900/50 backdrop-blur border border-gray-800' : 'bg-white border border-gray-200'
-      }`}
+      className={`rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl ${status === 'error'
+        ? 'border-2 border-red-500'
+        : theme === 'dark' ? 'bg-gray-900/50 backdrop-blur border border-gray-800' : 'bg-white border border-gray-200'
+        }`}
     >
-      <div className={`min-h-[48px] md:h-14 flex flex-wrap items-center justify-between px-4 md:px-5 py-2 gap-2 ${
-        status === 'error' 
-          ? 'bg-red-500/10 border-b border-red-500/30' 
-          : theme === 'dark' ? 'bg-gray-800/50 border-b border-gray-700' : 'bg-gray-100 border-b border-gray-200'
-      }`}>
+      <div className={`min-h-[48px] md:h-14 flex flex-wrap items-center justify-between px-4 md:px-5 py-2 gap-2 ${status === 'error'
+        ? 'bg-red-500/10 border-b border-red-500/30'
+        : theme === 'dark' ? 'bg-gray-800/50 border-b border-gray-700' : 'bg-gray-100 border-b border-gray-200'
+        }`}>
         <div className="flex items-center gap-2">
           {status === 'error' ? (
             <AlertTriangle size={16} className="text-red-500 md:w-[18px] md:h-[18px]" />
@@ -57,21 +66,20 @@ const OutputPanel = ({
             {status === 'error' ? 'Error' : mode === 'format' ? 'Output' : 'Comparison Result'}
           </span>
         </div>
-        {output && status !== 'error' && mode === 'format' && (
+        {output && status !== 'error' && mode === 'format' && isFormatOutput(output) && (
           <div className="flex flex-wrap gap-1.5 md:gap-2">
             {output.type === 'json' && setViewMode && (
               <div className={`flex gap-1 p-0.5 md:p-1 rounded-lg ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-200'}`}>
-                {['tree', 'table', 'raw'].map((v) => (
+                {(['tree', 'table', 'raw'] as ViewMode[]).map((v) => (
                   <motion.button
                     key={v}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setViewMode(v)}
-                    className={`px-2 py-1 md:px-3 rounded text-[10px] md:text-xs font-bold uppercase ${
-                      viewMode === v
-                        ? 'bg-indigo-600 text-white'
-                        : theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
-                    }`}
+                    className={`px-2 py-1 md:px-3 rounded text-[10px] md:text-xs font-bold uppercase ${viewMode === v
+                      ? 'bg-indigo-600 text-white'
+                      : theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                      }`}
                   >
                     {v === 'table' && <Table size={10} className="inline mr-0.5 md:mr-1 md:w-3 md:h-3" />}
                     {v === 'raw' && <FileJson size={10} className="inline mr-0.5 md:mr-1 md:w-3 md:h-3" />}
@@ -85,6 +93,7 @@ const OutputPanel = ({
               whileTap={{ scale: 0.95 }}
               onClick={onDownload}
               className={`p-1.5 md:p-2 rounded-lg transition-colors ${theme === 'dark' ? 'hover:bg-gray-700' : 'hover:bg-gray-200'}`}
+              aria-label="Download formatted output"
             >
               <Download size={16} className="md:w-[18px] md:h-[18px]" />
             </motion.button>
@@ -92,9 +101,9 @@ const OutputPanel = ({
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={onCopy}
-              className={`flex items-center gap-1.5 md:gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-lg transition-colors ${
-                copied ? 'bg-green-500 text-white' : theme === 'dark' ? 'hover:bg-gray-700' : 'hover:bg-gray-200'
-              }`}
+              className={`flex items-center gap-1.5 md:gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-lg transition-colors ${copied ? 'bg-green-500 text-white' : theme === 'dark' ? 'hover:bg-gray-700' : 'hover:bg-gray-200'
+                }`}
+              aria-label={copied ? 'Copied to clipboard' : 'Copy to clipboard'}
             >
               {copied ? <Check size={14} className="md:w-4 md:h-4" /> : <Copy size={14} className="md:w-4 md:h-4" />}
               <span className="text-xs md:text-sm font-medium">{copied ? 'Copied!' : 'Copy'}</span>
@@ -121,7 +130,7 @@ const OutputPanel = ({
             animate={{ scale: 1, opacity: 1 }}
             className="h-full"
           >
-            {mode === 'format' ? (
+            {mode === 'format' && isFormatOutput(output) ? (
               output.type === 'json' ? (
                 viewMode === 'tree' ? (
                   <JsonTreeView data={output.data} />
@@ -134,12 +143,12 @@ const OutputPanel = ({
                 )
               ) : output.type === 'graphql' ? (
                 <pre className={`p-4 md:p-6 font-mono text-xs md:text-sm overflow-x-auto ${theme === 'dark' ? 'text-cyan-400' : 'text-cyan-600'}`}>
-                  {output.data}
+                  {String(output.data)}
                 </pre>
               ) : null
-            ) : (
+            ) : isCompareOutput(output) ? (
               <JsonCompare json1={output.json1} json2={output.json2} />
-            )}
+            ) : null}
           </motion.div>
         ) : (
           <div className="h-full flex flex-col items-center justify-center text-gray-500 gap-3 md:gap-4 px-4">
@@ -154,7 +163,7 @@ const OutputPanel = ({
           </div>
         )}
       </div>
-    </motion.div>
+    </motion.div >
   );
 };
 

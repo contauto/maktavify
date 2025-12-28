@@ -1,4 +1,11 @@
-export const safeJsonParse = (input: string): any => {
+/**
+ * Safely parses JSON input, handling escaped strings, control characters,
+ * and double-encoded JSON strings.
+ * @param input - The JSON string to parse
+ * @returns The parsed JSON value
+ * @throws Error if the input cannot be parsed as valid JSON
+ */
+export const safeJsonParse = (input: string): unknown => {
     try {
         const parsed = JSON.parse(input);
 
