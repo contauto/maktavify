@@ -1,17 +1,22 @@
 "use client";
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Zap, GitCompare, ArrowDown, ArrowLeft } from 'lucide-react';
+import { Zap, GitCompare, ArrowLeft } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import prettier from 'prettier/standalone';
 import parserGraphql from 'prettier/parser-graphql';
 import { triggerFireworks } from '@/utils/animations';
 import { safeJsonParse } from '@/utils/jsonUtils';
+import { useSettings } from '@/context/SettingsContext';
 import Header from '@/components/layout/Header';
 import InputPanel from '@/components/ui/InputPanel';
 import OutputPanel from '@/components/ui/OutputPanel';
-import type { Theme, Mode, ActiveTab, ViewMode, FormatOutput, CompareOutput, ProcessStatus } from '@/types';
+import type { Mode, ActiveTab, ViewMode, FormatOutput, CompareOutput, ProcessStatus } from '@/types';
 
 export default function Maktavify() {
+  const { t } = useTranslation();
+  const { themeMode, layoutMode, animationsEnabled, currentTheme, getGradientStyle } = useSettings();
+
   const [mode, setMode] = useState<Mode>('format');
   const [activeTab, setActiveTab] = useState<ActiveTab>('json');
   const [input, setInput] = useState('');
@@ -19,28 +24,16 @@ export default function Maktavify() {
   const [output, setOutput] = useState<FormatOutput | CompareOutput | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<ProcessStatus>('idle');
-  const [theme, setTheme] = useState<Theme>('dark');
   const [viewMode, setViewMode] = useState<ViewMode>('tree');
   const [copied, setCopied] = useState(false);
   const [showOutput, setShowOutput] = useState(false);
 
-  // Reset to input view when mode changes
   useEffect(() => {
     setShowOutput(false);
     setOutput(null);
     setError(null);
     setStatus('idle');
   }, [mode]);
-
-  useEffect(() => {
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-      document.body.style.backgroundColor = '#000000';
-    } else {
-      document.documentElement.classList.remove('dark');
-      document.body.style.backgroundColor = '#ffffff';
-    }
-  }, [theme]);
 
   const handleProcess = useCallback(async () => {
     setError(null);
@@ -49,7 +42,7 @@ export default function Maktavify() {
 
     if (!input.trim()) {
       setStatus('error');
-      setError("Please enter some data first!");
+      setError(t('errors.empty_input'));
       return;
     }
 
@@ -59,7 +52,7 @@ export default function Maktavify() {
         setOutput({ type: 'json', data: parsed } as FormatOutput);
         setStatus('success');
         setShowOutput(true);
-        triggerFireworks();
+        if (animationsEnabled) triggerFireworks();
       } else {
         const formatted = await prettier.format(input, {
           parser: "graphql",
@@ -68,17 +61,16 @@ export default function Maktavify() {
         setOutput({ type: 'graphql', data: formatted } as FormatOutput);
         setStatus('success');
         setShowOutput(true);
-        triggerFireworks();
+        if (animationsEnabled) triggerFireworks();
       }
     } catch (err: unknown) {
       setStatus('error');
       setShowOutput(true);
-      const errorMessage = err instanceof Error ? err.message : "Invalid format! Please check your data.";
+      const errorMessage = err instanceof Error ? err.message : t('errors.invalid_format');
       setError(errorMessage);
     }
-  }, [input, activeTab]);
+  }, [input, activeTab, animationsEnabled, t]);
 
-  /** Type guard to check if output is FormatOutput */
   const isFormatOutput = (out: FormatOutput | CompareOutput | null): out is FormatOutput => {
     return out !== null && 'type' in out && 'data' in out;
   };
@@ -90,7 +82,7 @@ export default function Maktavify() {
 
     if (!input.trim() || !input2.trim()) {
       setStatus('error');
-      setError("Please enter data in both fields!");
+      setError(t('errors.empty_both'));
       return;
     }
 
@@ -100,14 +92,14 @@ export default function Maktavify() {
       setOutput({ json1, json2 } as CompareOutput);
       setStatus('success');
       setShowOutput(true);
-      triggerFireworks();
+      if (animationsEnabled) triggerFireworks();
     } catch (err: unknown) {
       setStatus('error');
       setShowOutput(true);
-      const errorMessage = err instanceof Error ? err.message : "Invalid JSON! Please check your data.";
+      const errorMessage = err instanceof Error ? err.message : t('errors.invalid_json');
       setError(errorMessage);
     }
-  }, [input, input2]);
+  }, [input, input2, animationsEnabled, t]);
 
   const handleCopy = useCallback(() => {
     if (!output) return;
@@ -164,149 +156,212 @@ export default function Maktavify() {
     }
   };
 
-  return (
-    <div className={`min-h-screen transition-all duration-500 ${theme === 'dark' ? 'bg-black text-white' : 'bg-white text-black'}`}>
-      <div className="fixed inset-0 pointer-events-none">
-        <div className={`absolute inset-0 ${theme === 'dark' ? 'bg-gradient-to-br from-indigo-900/20 via-transparent to-purple-900/20' : 'bg-gradient-to-br from-indigo-100/40 via-transparent to-purple-100/40'}`} />
+  const renderSamePageLayout = () => (
+    <div className="space-y-4">
+      <div className="flex justify-center py-4">
+        <motion.button
+          whileHover={animationsEnabled ? { scale: 1.1, rotate: mode === 'format' ? 90 : 180 } : undefined}
+          whileTap={animationsEnabled ? { scale: 0.9 } : undefined}
+          onClick={mode === 'format' ? handleProcess : handleCompare}
+          style={getGradientStyle()}
+          className="relative group w-16 h-16 lg:w-20 lg:h-20 rounded-2xl shadow-2xl flex items-center justify-center"
+          aria-label={mode === 'format' ? 'Format data' : 'Compare JSONs'}
+        >
+          {mode === 'format' ? (
+            <Zap className="text-white" size={32} />
+          ) : (
+            <GitCompare className="text-white" size={28} strokeWidth={2.5} />
+          )}
+          <div className="absolute inset-0 rounded-2xl bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+        </motion.button>
       </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+        <div className="space-y-4">
+          <InputPanel
+            label={mode === 'format' ? t('input.input') : t('input.json1')}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onClear={() => setInput('')}
+            onUpload={(e) => handleFileUpload(e, 'input1')}
+            activeTab={mode === 'format' ? activeTab : 'json'}
+            placeholder={activeTab === 'json' ? t('input.placeholder_json') : t('input.placeholder_graphql')}
+          />
+          {mode === 'compare' && (
+            <InputPanel
+              label={t('input.json2')}
+              value={input2}
+              onChange={(e) => setInput2(e.target.value)}
+              onClear={() => setInput2('')}
+              onUpload={(e) => handleFileUpload(e, 'input2')}
+              activeTab="json"
+              placeholder='{\n  "name": "Jane",\n  "age": 25\n}'
+              initialX={-10}
+            />
+          )}
+        </div>
+        <OutputPanel
+          status={status}
+          error={error}
+          output={output}
+          viewMode={viewMode}
+          setViewMode={setViewMode}
+          onCopy={handleCopy}
+          onDownload={handleDownload}
+          copied={copied}
+          mode={mode}
+        />
+      </div>
+    </div>
+  );
+
+  const renderDifferentPageLayout = () => {
+    if (mode === 'format') {
+      return showOutput ? (
+        <div className="space-y-4">
+          <motion.button
+            initial={animationsEnabled ? { x: -20, opacity: 0 } : undefined}
+            animate={{ x: 0, opacity: 1 }}
+            whileHover={animationsEnabled ? { scale: 1.02 } : undefined}
+            whileTap={animationsEnabled ? { scale: 0.98 } : undefined}
+            onClick={() => setShowOutput(false)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl font-semibold transition-all ${themeMode === 'dark'
+              ? 'bg-gray-800 hover:bg-gray-700 text-gray-200'
+              : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+              }`}
+            aria-label={t('output.back_to_input')}
+          >
+            <ArrowLeft size={18} />
+            <span>{t('output.back_to_input')}</span>
+          </motion.button>
+          <OutputPanel
+            status={status}
+            error={error}
+            output={output}
+            viewMode={viewMode}
+            setViewMode={setViewMode}
+            onCopy={handleCopy}
+            onDownload={handleDownload}
+            copied={copied}
+            mode={mode}
+          />
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <div className="flex justify-center py-4">
+            <motion.button
+              whileHover={animationsEnabled ? { scale: 1.1, rotate: 90 } : undefined}
+              whileTap={animationsEnabled ? { scale: 0.9 } : undefined}
+              onClick={handleProcess}
+              style={getGradientStyle()}
+              className="relative group w-16 h-16 lg:w-20 lg:h-20 rounded-2xl shadow-2xl flex items-center justify-center"
+              aria-label="Format data"
+            >
+              <Zap className="text-white" size={32} />
+              <div className="absolute inset-0 rounded-2xl bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+            </motion.button>
+          </div>
+          <InputPanel
+            label={t('input.input')}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onClear={() => setInput('')}
+            onUpload={(e) => handleFileUpload(e, 'input1')}
+            activeTab={activeTab}
+            placeholder={activeTab === 'json' ? t('input.placeholder_json') : t('input.placeholder_graphql')}
+          />
+        </div>
+      );
+    } else {
+      return showOutput ? (
+        <div className="space-y-4">
+          <motion.button
+            initial={animationsEnabled ? { x: -20, opacity: 0 } : undefined}
+            animate={{ x: 0, opacity: 1 }}
+            whileHover={animationsEnabled ? { scale: 1.02 } : undefined}
+            whileTap={animationsEnabled ? { scale: 0.98 } : undefined}
+            onClick={() => setShowOutput(false)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl font-semibold transition-all ${themeMode === 'dark'
+              ? 'bg-gray-800 hover:bg-gray-700 text-gray-200'
+              : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+              }`}
+            aria-label={t('output.back_to_input')}
+          >
+            <ArrowLeft size={18} />
+            <span>{t('output.back_to_input')}</span>
+          </motion.button>
+          <OutputPanel
+            status={status}
+            error={error}
+            output={output}
+            mode={mode}
+          />
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <div className="flex justify-center py-4">
+            <motion.button
+              whileHover={animationsEnabled ? { scale: 1.1, rotate: 180 } : undefined}
+              whileTap={animationsEnabled ? { scale: 0.9 } : undefined}
+              onClick={handleCompare}
+              style={getGradientStyle()}
+              className="relative group w-16 h-16 lg:w-20 lg:h-20 rounded-2xl shadow-2xl flex items-center justify-center"
+              aria-label="Compare JSONs"
+            >
+              <GitCompare className="text-white" size={28} strokeWidth={2.5} />
+              <div className="absolute inset-0 rounded-2xl bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+            </motion.button>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+            <InputPanel
+              label={t('input.json1')}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onClear={() => setInput('')}
+              onUpload={(e) => handleFileUpload(e, 'input1')}
+              activeTab="json"
+              placeholder='{\n  "name": "John",\n  "age": 30\n}'
+            />
+            <InputPanel
+              label={t('input.json2')}
+              value={input2}
+              onChange={(e) => setInput2(e.target.value)}
+              onClear={() => setInput2('')}
+              onUpload={(e) => handleFileUpload(e, 'input2')}
+              activeTab="json"
+              placeholder='{\n  "name": "Jane",\n  "age": 25\n}'
+              initialX={-10}
+            />
+          </div>
+        </div>
+      );
+    }
+  };
+
+  return (
+    <div
+      className="min-h-screen transition-all duration-500"
+      style={{
+        backgroundColor: themeMode === 'dark' ? '#0a0a0a' : '#f8fafc',
+        color: themeMode === 'dark' ? '#f3f4f6' : '#111827'
+      }}
+    >
+      <div
+        className="fixed inset-0 pointer-events-none"
+        style={{
+          background: `linear-gradient(to bottom right, ${currentTheme.primaryFrom}15, transparent, ${currentTheme.primaryTo}15)`
+        }}
+      />
 
       <div className="relative z-10 max-w-[1800px] mx-auto p-3 sm:p-4 md:p-6">
         <Header
-          theme={theme}
-          setTheme={setTheme}
           mode={mode}
           setMode={setMode}
           activeTab={activeTab}
           setActiveTab={setActiveTab}
         />
 
-        {mode === 'format' ? (
-          showOutput ? (
-            /* Output View - Fullscreen */
-            <div className="space-y-4">
-              <motion.button
-                initial={{ x: -20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setShowOutput(false)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl font-semibold transition-all ${theme === 'dark'
-                  ? 'bg-gray-800 hover:bg-gray-700 text-gray-200'
-                  : 'bg-gray-200 hover:bg-gray-300 text-gray-800'
-                  }`}
-                aria-label="Back to input"
-              >
-                <ArrowLeft size={18} />
-                <span>Back to Input</span>
-              </motion.button>
-              <OutputPanel
-                status={status}
-                error={error}
-                output={output}
-                theme={theme}
-                viewMode={viewMode}
-                setViewMode={setViewMode}
-                onCopy={handleCopy}
-                onDownload={handleDownload}
-                copied={copied}
-                mode={mode}
-              />
-            </div>
-          ) : (
-            /* Input View - Button at top for easy access */
-            <div className="space-y-4">
-              <div className="flex justify-center py-4">
-                <motion.button
-                  whileHover={{ scale: 1.1, rotate: 90 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={handleProcess}
-                  className="relative group w-16 h-16 lg:w-20 lg:h-20 rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-600 shadow-2xl shadow-indigo-500/40 flex items-center justify-center"
-                  aria-label="Format data"
-                >
-                  <Zap className="text-white" size={32} />
-                  <div className="absolute inset-0 rounded-2xl bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-                </motion.button>
-              </div>
-              <InputPanel
-                label="Input"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onClear={() => setInput('')}
-                onUpload={(e) => handleFileUpload(e, 'input1')}
-                theme={theme}
-                activeTab={activeTab}
-                placeholder={activeTab === 'json' ? '{\n  "name": "John",\n  "age": 30\n}' : 'query {\n  user(id: "1") {\n    name\n    email\n  }\n}'}
-              />
-            </div>
-          )
-        ) : (
-          showOutput ? (
-            /* Compare Output View - Fullscreen */
-            <div className="space-y-4">
-              <motion.button
-                initial={{ x: -20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setShowOutput(false)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl font-semibold transition-all ${theme === 'dark'
-                  ? 'bg-gray-800 hover:bg-gray-700 text-gray-200'
-                  : 'bg-gray-200 hover:bg-gray-300 text-gray-800'
-                  }`}
-                aria-label="Back to input"
-              >
-                <ArrowLeft size={18} />
-                <span>Back to Input</span>
-              </motion.button>
-              <OutputPanel
-                status={status}
-                error={error}
-                output={output}
-                theme={theme}
-                mode={mode}
-              />
-            </div>
-          ) : (
-            /* Compare Input View - Button at top for easy access */
-            <div className="space-y-4">
-              <div className="flex justify-center py-4">
-                <motion.button
-                  whileHover={{ scale: 1.1, rotate: 180 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={handleCompare}
-                  className="relative group w-16 h-16 lg:w-20 lg:h-20 rounded-2xl bg-gradient-to-br from-blue-600 to-cyan-600 shadow-2xl shadow-blue-500/40 flex items-center justify-center"
-                  aria-label="Compare JSONs"
-                >
-                  <GitCompare className="text-white" size={28} strokeWidth={2.5} />
-                  <div className="absolute inset-0 rounded-2xl bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-                </motion.button>
-              </div>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-                <InputPanel
-                  label="JSON 1"
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onClear={() => setInput('')}
-                  onUpload={(e) => handleFileUpload(e, 'input1')}
-                  theme={theme}
-                  activeTab="json"
-                  placeholder='{\n  "name": "John",\n  "age": 30\n}'
-                />
-                <InputPanel
-                  label="JSON 2"
-                  value={input2}
-                  onChange={(e) => setInput2(e.target.value)}
-                  onClear={() => setInput2('')}
-                  onUpload={(e) => handleFileUpload(e, 'input2')}
-                  theme={theme}
-                  activeTab="json"
-                  placeholder='{\n  "name": "Jane",\n  "age": 25\n}'
-                  initialX={-10}
-                />
-              </div>
-            </div>
-          )
-        )}
+        {layoutMode === 'samePage' ? renderSamePageLayout() : renderDifferentPageLayout()}
       </div>
     </div>
   );

@@ -1,0 +1,66 @@
+{
+    "app": {
+        "title": "Maktavify",
+        "subtitle": "Ultimate JSON & GraphQL Tool"
+    },
+    "header": {
+        "format": "Format",
+        "compare": "Compare",
+        "json": "JSON",
+        "graphql": "GraphQL"
+    },
+    "input": {
+        "placeholder_json": "{\n  \"name\": \"John\",\n  \"age\": 30\n}",
+        "placeholder_graphql": "query {\n  user(id: \"1\") {\n    name\n    email\n  }\n}",
+        "json1": "JSON 1",
+        "json2": "JSON 2",
+        "input": "Input",
+        "clear": "Clear",
+        "upload": "Upload"
+    },
+    "output": {
+        "title": "Output",
+        "comparison_result": "Comparison Result",
+        "error": "Error",
+        "ready_format": "Ready to format",
+        "ready_compare": "Ready to compare",
+        "copy": "Copy",
+        "copied": "Copied!",
+        "download": "Download",
+        "back_to_input": "Back to Input",
+        "tree": "Tree",
+        "table": "Table",
+        "raw": "Raw"
+    },
+    "errors": {
+        "empty_input": "Please enter some data first!",
+        "empty_both": "Please enter data in both fields!",
+        "invalid_format": "Invalid format! Please check your data.",
+        "invalid_json": "Invalid JSON! Please check your data."
+    },
+    "settings": {
+        "title": "Settings",
+        "theme": "Theme",
+        "color_scheme": "Color Scheme",
+        "language": "Language",
+        "animations": "Animations",
+        "layout": "Layout",
+        "same_page": "Same Page",
+        "different_page": "Different Pages",
+        "enable_fireworks": "Enable Fireworks",
+        "dark": "Dark",
+        "light": "Light"
+    },
+    "themes": {
+        "indigo": "Indigo",
+        "emerald": "Emerald",
+        "rose": "Rose",
+        "amber": "Amber",
+        "cyan": "Cyan",
+        "violet": "Violet"
+    },
+    "languages": {
+        "en": "English",
+        "tr": "Türkçe"
+    }
+}

@@ -1,0 +1,66 @@
+{
+    "app": {
+        "title": "Maktavify",
+        "subtitle": "JSON & GraphQL Aracı"
+    },
+    "header": {
+        "format": "Biçimlendir",
+        "compare": "Karşılaştır",
+        "json": "JSON",
+        "graphql": "GraphQL"
+    },
+    "input": {
+        "placeholder_json": "{\n  \"isim\": \"Ahmet\",\n  \"yas\": 30\n}",
+        "placeholder_graphql": "query {\n  kullanici(id: \"1\") {\n    isim\n    email\n  }\n}",
+        "json1": "JSON 1",
+        "json2": "JSON 2",
+        "input": "Girdi",
+        "clear": "Temizle",
+        "upload": "Yükle"
+    },
+    "output": {
+        "title": "Çıktı",
+        "comparison_result": "Karşılaştırma Sonucu",
+        "error": "Hata",
+        "ready_format": "Biçimlendirmeye hazır",
+        "ready_compare": "Karşılaştırmaya hazır",
+        "copy": "Kopyala",
+        "copied": "Kopyalandı!",
+        "download": "İndir",
+        "back_to_input": "Girdiye Dön",
+        "tree": "Ağaç",
+        "table": "Tablo",
+        "raw": "Ham"
+    },
+    "errors": {
+        "empty_input": "Lütfen önce veri girin!",
+        "empty_both": "Lütfen her iki alana da veri girin!",
+        "invalid_format": "Geçersiz biçim! Lütfen verilerinizi kontrol edin.",
+        "invalid_json": "Geçersiz JSON! Lütfen verilerinizi kontrol edin."
+    },
+    "settings": {
+        "title": "Ayarlar",
+        "theme": "Tema",
+        "color_scheme": "Renk Şeması",
+        "language": "Dil",
+        "animations": "Animasyonlar",
+        "layout": "Düzen",
+        "same_page": "Aynı Sayfa",
+        "different_page": "Farklı Sayfalar",
+        "enable_fireworks": "Havai Fişekleri Etkinleştir",
+        "dark": "Koyu",
+        "light": "Açık"
+    },
+    "themes": {
+        "indigo": "İndigo",
+        "emerald": "Zümrüt",
+        "rose": "Gül",
+        "amber": "Kehribar",
+        "cyan": "Camgöbeği",
+        "violet": "Mor"
+    },
+    "languages": {
+        "en": "English",
+        "tr": "Türkçe"
+    }
+}
