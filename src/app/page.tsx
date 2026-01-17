@@ -9,6 +9,7 @@ import { triggerFireworks } from '@/utils/animations';
 import { safeJsonParse } from '@/utils/jsonUtils';
 import { useSettings } from '@/context/SettingsContext';
 import Header from '@/components/layout/Header';
+import Footer from '@/components/layout/Footer';
 import InputPanel from '@/components/ui/InputPanel';
 import OutputPanel from '@/components/ui/OutputPanel';
 import type { Mode, ActiveTab, ViewMode, FormatOutput, CompareOutput, ProcessStatus } from '@/types';
@@ -362,6 +363,8 @@ export default function Maktavify() {
         />
 
         {layoutMode === 'samePage' ? renderSamePageLayout() : renderDifferentPageLayout()}
+
+        <Footer />
       </div>
     </div>
   );
