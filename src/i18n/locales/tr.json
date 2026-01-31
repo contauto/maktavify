@@ -1,17 +1,21 @@
 {
     "app": {
         "title": "Maktavify",
-        "subtitle": "JSON & GraphQL Aracı"
+        "subtitle": "JSON, GraphQL & XML Aracı"
     },
     "header": {
         "format": "Biçimlendir",
         "compare": "Karşılaştır",
         "json": "JSON",
-        "graphql": "GraphQL"
+        "graphql": "GraphQL",
+        "xml": "XML",
+        "xmlToJson": "XML → JSON",
+        "jsonToXml": "JSON → XML"
     },
     "input": {
         "placeholder_json": "{\n  \"isim\": \"Ahmet\",\n  \"yas\": 30\n}",
         "placeholder_graphql": "query {\n  kullanici(id: \"1\") {\n    isim\n    email\n  }\n}",
+        "placeholder_xml": "<kisi>\n  <isim>Ahmet</isim>\n  <yas>30</yas>\n</kisi>",
         "json1": "JSON 1",
         "json2": "JSON 2",
         "input": "Girdi",
@@ -36,7 +40,8 @@
         "empty_input": "Lütfen önce veri girin!",
         "empty_both": "Lütfen her iki alana da veri girin!",
         "invalid_format": "Geçersiz biçim! Lütfen verilerinizi kontrol edin.",
-        "invalid_json": "Geçersiz JSON! Lütfen verilerinizi kontrol edin."
+        "invalid_json": "Geçersiz JSON! Lütfen verilerinizi kontrol edin.",
+        "invalid_xml": "Geçersiz XML! Lütfen verilerinizi kontrol edin."
     },
     "settings": {
         "title": "Ayarlar",

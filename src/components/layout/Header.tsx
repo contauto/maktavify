@@ -5,16 +5,19 @@ import { Sparkles, Code2, GitCompare } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useSettings } from '@/context/SettingsContext';
 import SettingsMenu from '@/components/ui/SettingsMenu';
-import type { Mode, ActiveTab } from '@/types';
+import type { Mode, ActiveTab, CompareTab } from '@/types';
 
 interface HeaderProps {
   mode: Mode;
   setMode: (mode: Mode) => void;
   activeTab: ActiveTab;
   setActiveTab: (tab: ActiveTab) => void;
+  compareTab: CompareTab;
+  setCompareTab: (tab: CompareTab) => void;
+  onReset?: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ mode, setMode, activeTab, setActiveTab }) => {
+const Header: React.FC<HeaderProps> = ({ mode, setMode, activeTab, setActiveTab, compareTab, setCompareTab, onReset }) => {
   const { t } = useTranslation();
   const { themeMode, animationsEnabled, currentTheme, getGradientStyle } = useSettings();
 
@@ -24,7 +27,13 @@ const Header: React.FC<HeaderProps> = ({ mode, setMode, activeTab, setActiveTab 
       animate={{ y: 0, opacity: 1 }}
       className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 md:mb-8 gap-4"
     >
-      <div className="flex items-center gap-3 md:gap-4">
+      <motion.div
+        className="flex items-center gap-3 md:gap-4 cursor-pointer"
+        onClick={onReset}
+        whileHover={animationsEnabled ? { scale: 1.02 } : undefined}
+        whileTap={animationsEnabled ? { scale: 0.98 } : undefined}
+        title="Reset to initial state"
+      >
         <motion.div
           whileHover={animationsEnabled ? { rotate: 360, scale: 1.1 } : undefined}
           transition={{ duration: 0.6 }}
@@ -44,7 +53,7 @@ const Header: React.FC<HeaderProps> = ({ mode, setMode, activeTab, setActiveTab 
             {t('app.subtitle')}
           </p>
         </div>
-      </div>
+      </motion.div>
 
       <div className="flex flex-wrap items-center gap-2 md:gap-3 w-full sm:w-auto">
         <SettingsMenu />
@@ -70,7 +79,7 @@ const Header: React.FC<HeaderProps> = ({ mode, setMode, activeTab, setActiveTab 
 
         {mode === 'format' && (
           <div className={`p-1 md:p-1.5 rounded-lg md:rounded-xl flex gap-1 md:gap-2 ${themeMode === 'dark' ? 'bg-gray-800' : 'bg-gray-200'}`}>
-            {(['json', 'graphql'] as ActiveTab[]).map((tab) => (
+            {(['json', 'graphql', 'xml'] as ActiveTab[]).map((tab) => (
               <motion.button
                 key={tab}
                 whileHover={animationsEnabled ? { scale: 1.05 } : undefined}
@@ -78,6 +87,26 @@ const Header: React.FC<HeaderProps> = ({ mode, setMode, activeTab, setActiveTab 
                 onClick={() => setActiveTab(tab)}
                 style={activeTab === tab ? getGradientStyle() : undefined}
                 className={`px-3 py-1.5 md:px-5 md:py-2.5 rounded-md md:rounded-lg text-xs md:text-sm font-bold uppercase tracking-wider transition-all ${activeTab === tab
+                  ? 'text-white shadow-lg'
+                  : themeMode === 'dark' ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-gray-900'
+                  }`}
+              >
+                {t(`header.${tab}`)}
+              </motion.button>
+            ))}
+          </div>
+        )}
+
+        {mode === 'compare' && (
+          <div className={`p-1 md:p-1.5 rounded-lg md:rounded-xl flex gap-1 md:gap-2 ${themeMode === 'dark' ? 'bg-gray-800' : 'bg-gray-200'}`}>
+            {(['json', 'graphql', 'xml'] as CompareTab[]).map((tab) => (
+              <motion.button
+                key={tab}
+                whileHover={animationsEnabled ? { scale: 1.05 } : undefined}
+                whileTap={animationsEnabled ? { scale: 0.95 } : undefined}
+                onClick={() => setCompareTab(tab)}
+                style={compareTab === tab ? getGradientStyle() : undefined}
+                className={`px-3 py-1.5 md:px-5 md:py-2.5 rounded-md md:rounded-lg text-xs md:text-sm font-bold uppercase tracking-wider transition-all ${compareTab === tab
                   ? 'text-white shadow-lg'
                   : themeMode === 'dark' ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-gray-900'
                   }`}

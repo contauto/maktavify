@@ -9,21 +9,28 @@ export type Theme = 'dark' | 'light';
 export type Mode = 'format' | 'compare';
 
 /** Active tab for format mode */
-export type ActiveTab = 'json' | 'graphql';
+export type ActiveTab = 'json' | 'graphql' | 'xml';
+
+/** Conversion mode for XML/JSON transformations */
+export type ConversionMode = 'none' | 'xmlToJson' | 'jsonToXml';
 
 /** View mode for JSON output display */
 export type ViewMode = 'tree' | 'table' | 'raw';
 
+/** Compare tab type - JSON, GraphQL, or XML comparison */
+export type CompareTab = 'json' | 'graphql' | 'xml';
+
 /** Output state for format mode */
 export interface FormatOutput {
-    type: 'json' | 'graphql';
+    type: 'json' | 'graphql' | 'xml';
     data: unknown;
 }
 
 /** Output state for compare mode */
 export interface CompareOutput {
-    json1: unknown;
-    json2: unknown;
+    compareType: 'json' | 'graphql' | 'xml';
+    data1: unknown;
+    data2: unknown;
 }
 
 /** Combined output type */

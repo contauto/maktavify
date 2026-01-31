@@ -2,10 +2,17 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Heart, ExternalLink } from 'lucide-react';
+import Link from 'next/link';
 import { useSettings } from '@/context/SettingsContext';
 
 const Footer: React.FC = () => {
     const { themeMode, animationsEnabled, currentTheme } = useSettings();
+
+    const legalLinks = [
+        { href: '/about', label: 'About' },
+        { href: '/privacy', label: 'Privacy' },
+        { href: '/contact', label: 'Contact' },
+    ];
 
     return (
         <motion.footer
@@ -14,6 +21,29 @@ const Footer: React.FC = () => {
             transition={{ delay: 0.3 }}
             className="relative mt-12 mb-4"
         >
+            {/* Legal Links */}
+            <div className="flex items-center justify-center gap-4 mb-4">
+                {legalLinks.map((link, index) => (
+                    <React.Fragment key={link.href}>
+                        <Link href={link.href}>
+                            <motion.span
+                                whileHover={animationsEnabled ? { scale: 1.05 } : undefined}
+                                className={`text-sm font-medium cursor-pointer transition-colors ${themeMode === 'dark'
+                                        ? 'text-gray-400 hover:text-white'
+                                        : 'text-gray-500 hover:text-gray-900'
+                                    }`}
+                            >
+                                {link.label}
+                            </motion.span>
+                        </Link>
+                        {index < legalLinks.length - 1 && (
+                            <span className={themeMode === 'dark' ? 'text-gray-600' : 'text-gray-300'}>•</span>
+                        )}
+                    </React.Fragment>
+                ))}
+            </div>
+
+            {/* Creator Credit */}
             <div className="flex items-center justify-center">
                 <motion.a
                     href="https://berkemaktav.com"
@@ -78,6 +108,11 @@ const Footer: React.FC = () => {
                         />
                     </div>
                 </motion.a>
+            </div>
+
+            {/* Copyright */}
+            <div className={`text-center mt-4 text-xs ${themeMode === 'dark' ? 'text-gray-600' : 'text-gray-400'}`}>
+                © 2026 Maktavify. All rights reserved.
             </div>
         </motion.footer>
     );

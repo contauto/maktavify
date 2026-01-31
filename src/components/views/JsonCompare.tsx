@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { Check, Minus, Plus, RefreshCw } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useSettings } from '@/context/SettingsContext';
 
 interface DiffItem {
   path: string;
@@ -24,6 +25,7 @@ interface JsonCompareProps {
  * Side-by-side JSON comparison with colorized differences and synchronized scrolling
  */
 const JsonCompare: React.FC<JsonCompareProps> = ({ json1, json2 }) => {
+  const { themeMode } = useSettings();
   const leftScrollRef = useRef<HTMLDivElement>(null);
   const rightScrollRef = useRef<HTMLDivElement>(null);
   const isScrollingSyncRef = useRef(false);
@@ -211,14 +213,15 @@ const JsonCompare: React.FC<JsonCompareProps> = ({ json1, json2 }) => {
 
   // Get line style based on diff
   const getLineStyle = (path: string, side: 'left' | 'right'): string => {
+    const isDark = themeMode === 'dark';
     if (side === 'left') {
-      if (removedPaths.has(path)) return 'bg-red-500/20 text-red-300';
-      if (modifiedPaths.has(path)) return 'bg-yellow-500/20 text-yellow-300';
+      if (removedPaths.has(path)) return isDark ? 'bg-red-500/20 text-red-300' : 'bg-red-100 text-red-700';
+      if (modifiedPaths.has(path)) return isDark ? 'bg-yellow-500/20 text-yellow-300' : 'bg-yellow-100 text-yellow-700';
     } else {
-      if (addedPaths.has(path)) return 'bg-green-500/20 text-green-300';
-      if (modifiedPaths.has(path)) return 'bg-yellow-500/20 text-yellow-300';
+      if (addedPaths.has(path)) return isDark ? 'bg-green-500/20 text-green-300' : 'bg-green-100 text-green-700';
+      if (modifiedPaths.has(path)) return isDark ? 'bg-yellow-500/20 text-yellow-300' : 'bg-yellow-100 text-yellow-700';
     }
-    return '';
+    return isDark ? 'text-gray-300' : 'text-gray-700';
   };
 
   const totalDiffs = diff.added.length + diff.removed.length + diff.modified.length;
@@ -230,46 +233,46 @@ const JsonCompare: React.FC<JsonCompareProps> = ({ json1, json2 }) => {
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex flex-wrap gap-3 p-3 rounded-xl bg-gray-800/50 border border-gray-700/50"
+        className={`flex flex-wrap gap-3 p-3 rounded-xl ${themeMode === 'dark' ? 'bg-gray-800/50 border-gray-700/50' : 'bg-gray-100 border-gray-300'} border`}
       >
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full bg-green-500" />
-          <span className="text-gray-300">
-            <span className="text-green-400 font-bold">{diff.added.length}</span> added
+          <span className={themeMode === 'dark' ? 'text-gray-300' : 'text-gray-700'}>
+            <span className="text-green-500 font-bold">{diff.added.length}</span> added
           </span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full bg-red-500" />
-          <span className="text-gray-300">
-            <span className="text-red-400 font-bold">{diff.removed.length}</span> removed
+          <span className={themeMode === 'dark' ? 'text-gray-300' : 'text-gray-700'}>
+            <span className="text-red-500 font-bold">{diff.removed.length}</span> removed
           </span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full bg-yellow-500" />
-          <span className="text-gray-300">
-            <span className="text-yellow-400 font-bold">{diff.modified.length}</span> modified
+          <span className={themeMode === 'dark' ? 'text-gray-300' : 'text-gray-700'}>
+            <span className="text-yellow-500 font-bold">{diff.modified.length}</span> modified
           </span>
         </div>
         {isIdentical && (
           <div className="flex items-center gap-2 ml-auto">
             <Check size={16} className="text-green-500" />
-            <span className="text-green-400 font-semibold">Identical</span>
+            <span className="text-green-500 font-semibold">Identical</span>
           </div>
         )}
       </motion.div>
 
       {/* Color Legend */}
-      <div className="flex flex-wrap gap-4 text-xs text-gray-400 px-2">
+      <div className={`flex flex-wrap gap-4 text-xs px-2 ${themeMode === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
         <div className="flex items-center gap-1.5">
-          <span className="px-2 py-0.5 rounded bg-red-500/20 text-red-300">Red</span>
+          <span className={`px-2 py-0.5 rounded ${themeMode === 'dark' ? 'bg-red-500/20 text-red-300' : 'bg-red-100 text-red-700'}`}>Red</span>
           <span>= Only in JSON 1</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="px-2 py-0.5 rounded bg-green-500/20 text-green-300">Green</span>
+          <span className={`px-2 py-0.5 rounded ${themeMode === 'dark' ? 'bg-green-500/20 text-green-300' : 'bg-green-100 text-green-700'}`}>Green</span>
           <span>= Only in JSON 2</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="px-2 py-0.5 rounded bg-yellow-500/20 text-yellow-300">Yellow</span>
+          <span className={`px-2 py-0.5 rounded ${themeMode === 'dark' ? 'bg-yellow-500/20 text-yellow-300' : 'bg-yellow-100 text-yellow-700'}`}>Yellow</span>
           <span>= Different values</span>
         </div>
       </div>
@@ -277,10 +280,10 @@ const JsonCompare: React.FC<JsonCompareProps> = ({ json1, json2 }) => {
       {/* Side-by-side comparison */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Left JSON (JSON 1) */}
-        <div className="rounded-xl border border-gray-700/50 overflow-hidden">
-          <div className="px-4 py-2 bg-gray-800/50 border-b border-gray-700/50 flex items-center gap-2">
-            <Minus size={14} className="text-red-400" />
-            <span className="text-sm font-semibold text-gray-300">JSON 1</span>
+        <div className={`rounded-xl border ${themeMode === 'dark' ? 'border-gray-700/50' : 'border-gray-300'} overflow-hidden`}>
+          <div className={`px-4 py-2 border-b flex items-center gap-2 ${themeMode === 'dark' ? 'bg-gray-800/50 border-gray-700/50' : 'bg-gray-100 border-gray-300'}`}>
+            <Minus size={14} className="text-red-500" />
+            <span className={`text-sm font-semibold ${themeMode === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>JSON 1</span>
           </div>
           <div
             ref={leftScrollRef}
@@ -299,10 +302,10 @@ const JsonCompare: React.FC<JsonCompareProps> = ({ json1, json2 }) => {
         </div>
 
         {/* Right JSON (JSON 2) */}
-        <div className="rounded-xl border border-gray-700/50 overflow-hidden">
-          <div className="px-4 py-2 bg-gray-800/50 border-b border-gray-700/50 flex items-center gap-2">
-            <Plus size={14} className="text-green-400" />
-            <span className="text-sm font-semibold text-gray-300">JSON 2</span>
+        <div className={`rounded-xl border ${themeMode === 'dark' ? 'border-gray-700/50' : 'border-gray-300'} overflow-hidden`}>
+          <div className={`px-4 py-2 border-b flex items-center gap-2 ${themeMode === 'dark' ? 'bg-gray-800/50 border-gray-700/50' : 'bg-gray-100 border-gray-300'}`}>
+            <Plus size={14} className="text-green-500" />
+            <span className={`text-sm font-semibold ${themeMode === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>JSON 2</span>
           </div>
           <div
             ref={rightScrollRef}
@@ -324,7 +327,7 @@ const JsonCompare: React.FC<JsonCompareProps> = ({ json1, json2 }) => {
       {/* Detailed Changes */}
       {totalDiffs > 0 && (
         <div className="space-y-3 mt-4">
-          <div className="flex items-center gap-2 text-sm font-semibold text-gray-300">
+          <div className={`flex items-center gap-2 text-sm font-semibold ${themeMode === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
             <RefreshCw size={14} />
             <span>Detailed Changes</span>
           </div>
@@ -332,16 +335,16 @@ const JsonCompare: React.FC<JsonCompareProps> = ({ json1, json2 }) => {
           {diff.modified.length > 0 && (
             <div className="space-y-2">
               {diff.modified.map((item, i) => (
-                <div key={i} className="p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/30 overflow-hidden">
-                  <div className="text-yellow-300 font-semibold mb-2 break-all">{item.path}</div>
+                <div key={i} className={`p-3 rounded-lg overflow-hidden ${themeMode === 'dark' ? 'bg-yellow-500/10 border border-yellow-500/30' : 'bg-yellow-50 border border-yellow-200'}`}>
+                  <div className={`font-semibold mb-2 break-all ${themeMode === 'dark' ? 'text-yellow-300' : 'text-yellow-700'}`}>{item.path}</div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
-                    <div className="p-2 rounded bg-red-500/10 border border-red-500/20 overflow-hidden">
-                      <div className="text-red-400 font-semibold mb-1">Old:</div>
-                      <div className="text-red-300 break-all whitespace-pre-wrap">{JSON.stringify(item.old)}</div>
+                    <div className={`p-2 rounded overflow-hidden ${themeMode === 'dark' ? 'bg-red-500/10 border border-red-500/20' : 'bg-red-50 border border-red-200'}`}>
+                      <div className={`font-semibold mb-1 ${themeMode === 'dark' ? 'text-red-400' : 'text-red-600'}`}>Old:</div>
+                      <div className={`break-all whitespace-pre-wrap ${themeMode === 'dark' ? 'text-red-300' : 'text-red-700'}`}>{JSON.stringify(item.old)}</div>
                     </div>
-                    <div className="p-2 rounded bg-green-500/10 border border-green-500/20 overflow-hidden">
-                      <div className="text-green-400 font-semibold mb-1">New:</div>
-                      <div className="text-green-300 break-all whitespace-pre-wrap">{JSON.stringify(item.new)}</div>
+                    <div className={`p-2 rounded overflow-hidden ${themeMode === 'dark' ? 'bg-green-500/10 border border-green-500/20' : 'bg-green-50 border border-green-200'}`}>
+                      <div className={`font-semibold mb-1 ${themeMode === 'dark' ? 'text-green-400' : 'text-green-600'}`}>New:</div>
+                      <div className={`break-all whitespace-pre-wrap ${themeMode === 'dark' ? 'text-green-300' : 'text-green-700'}`}>{JSON.stringify(item.new)}</div>
                     </div>
                   </div>
                 </div>
@@ -352,9 +355,9 @@ const JsonCompare: React.FC<JsonCompareProps> = ({ json1, json2 }) => {
           {diff.removed.length > 0 && (
             <div className="space-y-2">
               {diff.removed.map((item, i) => (
-                <div key={i} className="p-3 rounded-lg bg-red-500/10 border border-red-500/30 overflow-hidden">
-                  <div className="text-red-300 font-semibold break-all">{item.path}</div>
-                  <div className="text-red-400 break-all whitespace-pre-wrap mt-1">{JSON.stringify(item.value)}</div>
+                <div key={i} className={`p-3 rounded-lg overflow-hidden ${themeMode === 'dark' ? 'bg-red-500/10 border border-red-500/30' : 'bg-red-50 border border-red-200'}`}>
+                  <div className={`font-semibold break-all ${themeMode === 'dark' ? 'text-red-300' : 'text-red-700'}`}>{item.path}</div>
+                  <div className={`break-all whitespace-pre-wrap mt-1 ${themeMode === 'dark' ? 'text-red-400' : 'text-red-600'}`}>{JSON.stringify(item.value)}</div>
                 </div>
               ))}
             </div>
@@ -363,9 +366,9 @@ const JsonCompare: React.FC<JsonCompareProps> = ({ json1, json2 }) => {
           {diff.added.length > 0 && (
             <div className="space-y-2">
               {diff.added.map((item, i) => (
-                <div key={i} className="p-3 rounded-lg bg-green-500/10 border border-green-500/30 overflow-hidden">
-                  <div className="text-green-300 font-semibold break-all">{item.path}</div>
-                  <div className="text-green-400 break-all whitespace-pre-wrap mt-1">{JSON.stringify(item.value)}</div>
+                <div key={i} className={`p-3 rounded-lg overflow-hidden ${themeMode === 'dark' ? 'bg-green-500/10 border border-green-500/30' : 'bg-green-50 border border-green-200'}`}>
+                  <div className={`font-semibold break-all ${themeMode === 'dark' ? 'text-green-300' : 'text-green-700'}`}>{item.path}</div>
+                  <div className={`break-all whitespace-pre-wrap mt-1 ${themeMode === 'dark' ? 'text-green-400' : 'text-green-600'}`}>{JSON.stringify(item.value)}</div>
                 </div>
               ))}
             </div>

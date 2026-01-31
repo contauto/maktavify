@@ -1,18 +1,19 @@
 "use client";
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Zap, GitCompare, ArrowLeft } from 'lucide-react';
+import { Zap, GitCompare, ArrowLeft, ArrowRightLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import prettier from 'prettier/standalone';
 import parserGraphql from 'prettier/parser-graphql';
 import { triggerFireworks } from '@/utils/animations';
 import { safeJsonParse } from '@/utils/jsonUtils';
+import { beautifyXml, xmlToJson, jsonToXml, parseXml } from '@/utils/xmlUtils';
 import { useSettings } from '@/context/SettingsContext';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import InputPanel from '@/components/ui/InputPanel';
 import OutputPanel from '@/components/ui/OutputPanel';
-import type { Mode, ActiveTab, ViewMode, FormatOutput, CompareOutput, ProcessStatus } from '@/types';
+import type { Mode, ActiveTab, ViewMode, FormatOutput, CompareOutput, ProcessStatus, ConversionMode, CompareTab } from '@/types';
 
 export default function Maktavify() {
   const { t } = useTranslation();
@@ -28,6 +29,8 @@ export default function Maktavify() {
   const [viewMode, setViewMode] = useState<ViewMode>('tree');
   const [copied, setCopied] = useState(false);
   const [showOutput, setShowOutput] = useState(false);
+  const [conversionMode, setConversionMode] = useState<ConversionMode>('none');
+  const [compareTab, setCompareTab] = useState<CompareTab>('json');
 
   useEffect(() => {
     setShowOutput(false);
@@ -35,6 +38,27 @@ export default function Maktavify() {
     setError(null);
     setStatus('idle');
   }, [mode]);
+
+  // Reset conversion mode when tab changes
+  useEffect(() => {
+    setConversionMode('none');
+  }, [activeTab]);
+
+  // Reset all state to initial values
+  const handleReset = useCallback(() => {
+    setMode('format');
+    setActiveTab('json');
+    setInput('');
+    setInput2('');
+    setOutput(null);
+    setError(null);
+    setStatus('idle');
+    setViewMode('tree');
+    setCopied(false);
+    setShowOutput(false);
+    setConversionMode('none');
+    setCompareTab('json');
+  }, []);
 
   const handleProcess = useCallback(async () => {
     setError(null);
@@ -49,12 +73,33 @@ export default function Maktavify() {
 
     try {
       if (activeTab === 'json') {
-        const parsed = safeJsonParse(input);
-        setOutput({ type: 'json', data: parsed } as FormatOutput);
+        // JSON mode - check for conversion
+        if (conversionMode === 'jsonToXml') {
+          const parsed = safeJsonParse(input);
+          const xmlResult = jsonToXml(parsed);
+          const beautified = beautifyXml(xmlResult);
+          setOutput({ type: 'xml', data: beautified } as FormatOutput);
+        } else {
+          const parsed = safeJsonParse(input);
+          setOutput({ type: 'json', data: parsed } as FormatOutput);
+        }
+        setStatus('success');
+        setShowOutput(true);
+        if (animationsEnabled) triggerFireworks();
+      } else if (activeTab === 'xml') {
+        // XML mode - check for conversion
+        if (conversionMode === 'xmlToJson') {
+          const jsonResult = xmlToJson(input);
+          setOutput({ type: 'json', data: jsonResult } as FormatOutput);
+        } else {
+          const beautified = beautifyXml(input);
+          setOutput({ type: 'xml', data: beautified } as FormatOutput);
+        }
         setStatus('success');
         setShowOutput(true);
         if (animationsEnabled) triggerFireworks();
       } else {
+        // GraphQL mode
         const formatted = await prettier.format(input, {
           parser: "graphql",
           plugins: [parserGraphql],
@@ -70,7 +115,7 @@ export default function Maktavify() {
       const errorMessage = err instanceof Error ? err.message : t('errors.invalid_format');
       setError(errorMessage);
     }
-  }, [input, activeTab, animationsEnabled, t]);
+  }, [input, activeTab, conversionMode, animationsEnabled, t]);
 
   const isFormatOutput = (out: FormatOutput | CompareOutput | null): out is FormatOutput => {
     return out !== null && 'type' in out && 'data' in out;
@@ -88,19 +133,34 @@ export default function Maktavify() {
     }
 
     try {
-      const json1 = safeJsonParse(input);
-      const json2 = safeJsonParse(input2);
-      setOutput({ json1, json2 } as CompareOutput);
+      if (compareTab === 'json') {
+        const data1 = safeJsonParse(input);
+        const data2 = safeJsonParse(input2);
+        setOutput({ compareType: 'json', data1, data2 } as CompareOutput);
+      } else if (compareTab === 'graphql') {
+        // GraphQL comparison - just validate non-empty
+        if (!input.trim() || !input2.trim()) {
+          throw new Error(t('errors.empty_both'));
+        }
+        setOutput({ compareType: 'graphql', data1: input, data2: input2 } as CompareOutput);
+      } else {
+        // XML comparison - validate both XMLs
+        parseXml(input); // throws if invalid
+        parseXml(input2); // throws if invalid
+        setOutput({ compareType: 'xml', data1: input, data2: input2 } as CompareOutput);
+      }
       setStatus('success');
       setShowOutput(true);
       if (animationsEnabled) triggerFireworks();
     } catch (err: unknown) {
       setStatus('error');
       setShowOutput(true);
-      const errorMessage = err instanceof Error ? err.message : t('errors.invalid_json');
+      const errorMessage = err instanceof Error ? err.message :
+        compareTab === 'json' ? t('errors.invalid_json') :
+          compareTab === 'xml' ? t('errors.invalid_xml') : t('errors.invalid_graphql');
       setError(errorMessage);
     }
-  }, [input, input2, animationsEnabled, t]);
+  }, [input, input2, compareTab, animationsEnabled, t]);
 
   const handleCopy = useCallback(() => {
     if (!output) return;
@@ -133,12 +193,62 @@ export default function Maktavify() {
     }
 
     const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
-    const exportFileDefaultName = `formatted-${fileType}.${fileType === 'graphql' ? 'graphql' : 'json'}`;
+    const getExtension = (type: string) => {
+      switch (type) {
+        case 'graphql': return 'graphql';
+        case 'xml': return 'xml';
+        default: return 'json';
+      }
+    };
+    const ext = getExtension(fileType);
+    const exportFileDefaultName = `formatted-${fileType}.${ext}`;
     const linkElement = document.createElement('a');
     linkElement.setAttribute('href', dataUri);
     linkElement.setAttribute('download', exportFileDefaultName);
     linkElement.click();
   }, [output]);
+
+  const getPlaceholder = () => {
+    switch (activeTab) {
+      case 'json': return t('input.placeholder_json');
+      case 'graphql': return t('input.placeholder_graphql');
+      case 'xml': return t('input.placeholder_xml');
+      default: return '';
+    }
+  };
+
+  const renderConversionToggle = () => {
+    // Only show for JSON and XML tabs in format mode
+    if (mode !== 'format') return null;
+    if (activeTab !== 'json' && activeTab !== 'xml') return null;
+
+    const options = activeTab === 'json'
+      ? [{ value: 'none' as ConversionMode, label: 'JSON' }, { value: 'jsonToXml' as ConversionMode, label: t('header.jsonToXml') }]
+      : [{ value: 'none' as ConversionMode, label: 'XML' }, { value: 'xmlToJson' as ConversionMode, label: t('header.xmlToJson') }];
+
+    return (
+      <div className="flex justify-center py-2">
+        <div className={`p-1 md:p-1.5 rounded-lg md:rounded-xl flex gap-1 md:gap-2 ${themeMode === 'dark' ? 'bg-gray-800' : 'bg-gray-200'}`}>
+          {options.map((opt) => (
+            <motion.button
+              key={opt.value}
+              whileHover={animationsEnabled ? { scale: 1.05 } : undefined}
+              whileTap={animationsEnabled ? { scale: 0.95 } : undefined}
+              onClick={() => setConversionMode(opt.value)}
+              style={conversionMode === opt.value ? getGradientStyle() : undefined}
+              className={`px-3 py-1.5 md:px-5 md:py-2.5 rounded-md md:rounded-lg text-xs md:text-sm font-bold transition-all flex items-center gap-2 ${conversionMode === opt.value
+                ? 'text-white shadow-lg'
+                : themeMode === 'dark' ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-gray-900'
+                }`}
+            >
+              {opt.value !== 'none' && <ArrowRightLeft size={14} />}
+              {opt.label}
+            </motion.button>
+          ))}
+        </div>
+      </div>
+    );
+  };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, targetInput: string) => {
     const file = e.target.files?.[0];
@@ -159,6 +269,7 @@ export default function Maktavify() {
 
   const renderSamePageLayout = () => (
     <div className="space-y-4">
+      {renderConversionToggle()}
       <div className="flex justify-center py-4">
         <motion.button
           whileHover={animationsEnabled ? { scale: 1.1, rotate: mode === 'format' ? 90 : 180 } : undefined}
@@ -186,7 +297,7 @@ export default function Maktavify() {
             onClear={() => setInput('')}
             onUpload={(e) => handleFileUpload(e, 'input1')}
             activeTab={mode === 'format' ? activeTab : 'json'}
-            placeholder={activeTab === 'json' ? t('input.placeholder_json') : t('input.placeholder_graphql')}
+            placeholder={getPlaceholder()}
           />
           {mode === 'compare' && (
             <InputPanel
@@ -249,6 +360,7 @@ export default function Maktavify() {
         </div>
       ) : (
         <div className="space-y-4">
+          {renderConversionToggle()}
           <div className="flex justify-center py-4">
             <motion.button
               whileHover={animationsEnabled ? { scale: 1.1, rotate: 90 } : undefined}
@@ -269,7 +381,7 @@ export default function Maktavify() {
             onClear={() => setInput('')}
             onUpload={(e) => handleFileUpload(e, 'input1')}
             activeTab={activeTab}
-            placeholder={activeTab === 'json' ? t('input.placeholder_json') : t('input.placeholder_graphql')}
+            placeholder={getPlaceholder()}
           />
         </div>
       );
@@ -360,6 +472,9 @@ export default function Maktavify() {
           setMode={setMode}
           activeTab={activeTab}
           setActiveTab={setActiveTab}
+          compareTab={compareTab}
+          setCompareTab={setCompareTab}
+          onReset={handleReset}
         />
 
         {layoutMode === 'samePage' ? renderSamePageLayout() : renderDifferentPageLayout()}

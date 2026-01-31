@@ -1,17 +1,21 @@
 {
     "app": {
         "title": "Maktavify",
-        "subtitle": "Ultimate JSON & GraphQL Tool"
+        "subtitle": "Ultimate JSON, GraphQL & XML Tool"
     },
     "header": {
         "format": "Format",
         "compare": "Compare",
         "json": "JSON",
-        "graphql": "GraphQL"
+        "graphql": "GraphQL",
+        "xml": "XML",
+        "xmlToJson": "XML → JSON",
+        "jsonToXml": "JSON → XML"
     },
     "input": {
         "placeholder_json": "{\n  \"name\": \"John\",\n  \"age\": 30\n}",
         "placeholder_graphql": "query {\n  user(id: \"1\") {\n    name\n    email\n  }\n}",
+        "placeholder_xml": "<root>\n  <name>John</name>\n  <age>30</age>\n</root>",
         "json1": "JSON 1",
         "json2": "JSON 2",
         "input": "Input",
@@ -36,7 +40,8 @@
         "empty_input": "Please enter some data first!",
         "empty_both": "Please enter data in both fields!",
         "invalid_format": "Invalid format! Please check your data.",
-        "invalid_json": "Invalid JSON! Please check your data."
+        "invalid_json": "Invalid JSON! Please check your data.",
+        "invalid_xml": "Invalid XML! Please check your data."
     },
     "settings": {
         "title": "Settings",

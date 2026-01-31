@@ -7,6 +7,8 @@ import { useSettings } from '@/context/SettingsContext';
 import JsonTreeView from '@/components/views/JsonTreeView';
 import JsonTableView from '@/components/views/JsonTableView';
 import JsonCompare from '@/components/views/JsonCompare';
+import GraphqlCompare from '@/components/views/GraphqlCompare';
+import XmlCompare from '@/components/views/XmlCompare';
 import type { Mode, ViewMode, ProcessStatus, FormatOutput, CompareOutput } from '@/types';
 
 interface OutputPanelProps {
@@ -40,7 +42,7 @@ const OutputPanel: React.FC<OutputPanelProps> = ({
   };
 
   const isCompareOutput = (out: FormatOutput | CompareOutput | null): out is CompareOutput => {
-    return out !== null && 'json1' in out && 'json2' in out;
+    return out !== null && 'compareType' in out && 'data1' in out && 'data2' in out;
   };
 
   return (
@@ -161,9 +163,19 @@ const OutputPanel: React.FC<OutputPanelProps> = ({
                 <pre className={`p-4 md:p-6 font-mono text-xs md:text-sm overflow-x-auto`} style={{ color: currentTheme.accent }}>
                   {String(output.data)}
                 </pre>
+              ) : output.type === 'xml' ? (
+                <pre className={`p-4 md:p-6 font-mono text-xs md:text-sm overflow-x-auto`} style={{ color: currentTheme.accent }}>
+                  {String(output.data)}
+                </pre>
               ) : null
             ) : isCompareOutput(output) ? (
-              <JsonCompare json1={output.json1} json2={output.json2} />
+              output.compareType === 'json' ? (
+                <JsonCompare json1={output.data1} json2={output.data2} />
+              ) : output.compareType === 'graphql' ? (
+                <GraphqlCompare graphql1={String(output.data1)} graphql2={String(output.data2)} />
+              ) : (
+                <XmlCompare xml1={String(output.data1)} xml2={String(output.data2)} />
+              )
             ) : null}
           </motion.div>
         ) : (
