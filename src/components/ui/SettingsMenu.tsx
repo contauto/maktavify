@@ -56,13 +56,16 @@ const SettingsMenu: React.FC = () => {
     ];
 
     return (
-        <>
+        <div className="relative">
             {/* Settings Button */}
             <motion.button
                 whileHover={animationsEnabled ? { scale: 1.05 } : undefined}
                 whileTap={animationsEnabled ? { scale: 0.95 } : undefined}
-                onClick={() => setIsOpen(!isOpen)}
-                className={`p-2.5 md:p-3 rounded-lg md:rounded-xl transition-all ${themeMode === 'dark'
+                onClick={(e) => {
+                    e.stopPropagation();
+                    setIsOpen(!isOpen);
+                }}
+                className={`p-2.5 md:p-3 rounded-lg md:rounded-xl transition-all relative z-50 ${themeMode === 'dark'
                     ? 'bg-gray-800 hover:bg-gray-700 text-gray-200'
                     : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
                     }`}
@@ -75,13 +78,14 @@ const SettingsMenu: React.FC = () => {
             <AnimatePresence>
                 {isOpen && (
                     <>
-                        {/* Backdrop - only visible on mobile */}
+                        {/* Backdrop - visible on all devices */}
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setIsOpen(false)}
-                            className="fixed inset-0 bg-black/50 z-40 md:hidden"
+                            className="fixed inset-0 bg-black/50 z-[60]"
+                            style={{ touchAction: 'none' }}
                         />
 
                         {/* Menu Container */}
@@ -91,11 +95,12 @@ const SettingsMenu: React.FC = () => {
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: 20, scale: 0.95 }}
                             transition={{ duration: 0.2 }}
+                            onClick={(e) => e.stopPropagation()}
                             className={`
-                                fixed md:absolute z-50
-                                inset-x-4 bottom-4 md:inset-auto
-                                md:right-0 md:top-full md:mt-2
-                                w-auto md:w-80
+                                fixed z-[70]
+                                left-4 right-4 bottom-4
+                                md:left-auto md:right-4 md:bottom-auto md:top-20
+                                md:w-80
                                 max-h-[85vh] md:max-h-[80vh]
                                 overflow-y-auto
                                 rounded-2xl shadow-2xl border
@@ -277,7 +282,7 @@ const SettingsMenu: React.FC = () => {
                     </>
                 )}
             </AnimatePresence>
-        </>
+        </div>
     );
 };
 
