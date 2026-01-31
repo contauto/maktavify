@@ -1,26 +1,28 @@
 {
-    "name": "Maktavify",
+    "name": "Maktavify - JSON, GraphQL & XML Beautifier",
     "short_name": "Maktavify",
-    "description": "Free online tool to format, beautify, and compare JSON, GraphQL, and XML",
+    "description": "Free online tool to format, beautify, validate and compare JSON, GraphQL, and XML. No signup required.",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#0f172a",
     "theme_color": "#4f46e5",
+    "orientation": "any",
+    "categories": [
+        "developer",
+        "utilities",
+        "productivity"
+    ],
     "icons": [
         {
             "src": "/favicon.ico",
-            "sizes": "any",
+            "sizes": "48x48",
             "type": "image/x-icon"
         },
         {
-            "src": "/icon-192.png",
-            "sizes": "192x192",
-            "type": "image/png"
-        },
-        {
-            "src": "/icon-512.png",
-            "sizes": "512x512",
-            "type": "image/png"
+            "src": "/og-image.png",
+            "sizes": "1200x630",
+            "type": "image/png",
+            "purpose": "any"
         }
     ]
 }
