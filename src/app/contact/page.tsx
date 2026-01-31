@@ -1,18 +1,21 @@
 'use client';
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Mail, ArrowLeft, Send, MessageCircle, Globe, Check } from 'lucide-react';
+import { Mail, ArrowLeft, Send, MessageCircle, Globe } from 'lucide-react';
 import Link from 'next/link';
 import { useSettings } from '@/context/SettingsContext';
 
 export default function ContactUs() {
     const { themeMode, animationsEnabled, currentTheme, getGradientStyle } = useSettings();
-    const [formSubmitted, setFormSubmitted] = useState(false);
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [message, setMessage] = useState('');
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // For demo purposes - in production, this would send to a backend
-        setFormSubmitted(true);
+        const subject = encodeURIComponent(`Maktavify Contact: Message from ${name}`);
+        const body = encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`);
+        window.location.href = `mailto:info@berkemaktav.com?subject=${subject}&body=${body}`;
     };
 
     return (
@@ -132,83 +135,74 @@ export default function ContactUs() {
                     >
                         <h2 className="text-xl font-bold mb-6" style={{ color: currentTheme.accent }}>Send a Message</h2>
 
-                        {formSubmitted ? (
-                            <motion.div
-                                initial={{ scale: 0.9, opacity: 0 }}
-                                animate={{ scale: 1, opacity: 1 }}
-                                className="flex flex-col items-center justify-center py-12"
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <div>
+                                <label className={`block text-sm font-medium mb-2 ${themeMode === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
+                                    Name
+                                </label>
+                                <input
+                                    type="text"
+                                    required
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                    className={`w-full px-4 py-3 rounded-xl border ${themeMode === 'dark'
+                                        ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500'
+                                        : 'bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-400'
+                                        } focus:outline-none focus:ring-2`}
+                                    style={{ '--tw-ring-color': currentTheme.accent } as React.CSSProperties}
+                                    placeholder="Your name"
+                                />
+                            </div>
+
+                            <div>
+                                <label className={`block text-sm font-medium mb-2 ${themeMode === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
+                                    Email
+                                </label>
+                                <input
+                                    type="email"
+                                    required
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className={`w-full px-4 py-3 rounded-xl border ${themeMode === 'dark'
+                                        ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500'
+                                        : 'bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-400'
+                                        } focus:outline-none focus:ring-2`}
+                                    placeholder="your@email.com"
+                                />
+                            </div>
+
+                            <div>
+                                <label className={`block text-sm font-medium mb-2 ${themeMode === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
+                                    Message
+                                </label>
+                                <textarea
+                                    required
+                                    rows={4}
+                                    value={message}
+                                    onChange={(e) => setMessage(e.target.value)}
+                                    className={`w-full px-4 py-3 rounded-xl border resize-none ${themeMode === 'dark'
+                                        ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500'
+                                        : 'bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-400'
+                                        } focus:outline-none focus:ring-2`}
+                                    placeholder="How can we help?"
+                                />
+                            </div>
+
+                            <motion.button
+                                type="submit"
+                                whileHover={animationsEnabled ? { scale: 1.02 } : undefined}
+                                whileTap={animationsEnabled ? { scale: 0.98 } : undefined}
+                                style={getGradientStyle()}
+                                className="w-full py-3 rounded-xl text-white font-bold flex items-center justify-center gap-2"
                             >
-                                <div
-                                    style={getGradientStyle()}
-                                    className="w-16 h-16 rounded-full flex items-center justify-center mb-4"
-                                >
-                                    <Check className="text-white" size={32} />
-                                </div>
-                                <h3 className="text-xl font-bold mb-2">Thank You!</h3>
-                                <p className={`text-center ${themeMode === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                                    Your message has been received. We'll get back to you soon.
-                                </p>
-                            </motion.div>
-                        ) : (
-                            <form onSubmit={handleSubmit} className="space-y-4">
-                                <div>
-                                    <label className={`block text-sm font-medium mb-2 ${themeMode === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
-                                        Name
-                                    </label>
-                                    <input
-                                        type="text"
-                                        required
-                                        className={`w-full px-4 py-3 rounded-xl border ${themeMode === 'dark'
-                                            ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500'
-                                            : 'bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-400'
-                                            } focus:outline-none focus:ring-2`}
-                                        style={{ '--tw-ring-color': currentTheme.accent } as React.CSSProperties}
-                                        placeholder="Your name"
-                                    />
-                                </div>
+                                <Send size={18} />
+                                Send Message
+                            </motion.button>
 
-                                <div>
-                                    <label className={`block text-sm font-medium mb-2 ${themeMode === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
-                                        Email
-                                    </label>
-                                    <input
-                                        type="email"
-                                        required
-                                        className={`w-full px-4 py-3 rounded-xl border ${themeMode === 'dark'
-                                            ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500'
-                                            : 'bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-400'
-                                            } focus:outline-none focus:ring-2`}
-                                        placeholder="your@email.com"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className={`block text-sm font-medium mb-2 ${themeMode === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
-                                        Message
-                                    </label>
-                                    <textarea
-                                        required
-                                        rows={4}
-                                        className={`w-full px-4 py-3 rounded-xl border resize-none ${themeMode === 'dark'
-                                            ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500'
-                                            : 'bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-400'
-                                            } focus:outline-none focus:ring-2`}
-                                        placeholder="How can we help?"
-                                    />
-                                </div>
-
-                                <motion.button
-                                    type="submit"
-                                    whileHover={animationsEnabled ? { scale: 1.02 } : undefined}
-                                    whileTap={animationsEnabled ? { scale: 0.98 } : undefined}
-                                    style={getGradientStyle()}
-                                    className="w-full py-3 rounded-xl text-white font-bold flex items-center justify-center gap-2"
-                                >
-                                    <Send size={18} />
-                                    Send Message
-                                </motion.button>
-                            </form>
-                        )}
+                            <p className={`text-xs text-center ${themeMode === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
+                                This will open your email client
+                            </p>
+                        </form>
                     </motion.div>
                 </div>
 
