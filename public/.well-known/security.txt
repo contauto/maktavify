@@ -1,0 +1,5 @@
+Contact: mailto:contact@berkemaktav.com
+Expires: 2027-01-01T00:00:00.000Z
+Preferred-Languages: en, tr
+Canonical: https://maktavify.com/.well-known/security.txt
+Policy: https://maktavify.com/privacy

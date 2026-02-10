@@ -2,6 +2,16 @@
   "name": "json-graphql-master",
   "version": "0.1.0",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/berkemaktav/maktavify"
+  },
+  "author": "Berkemaktav <contact@berkemaktav.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/berkemaktav/maktavify/issues"
+  },
+  "homepage": "https://maktavify.com",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
